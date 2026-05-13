@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { Clock3, Mail, MapPin, MessageCircleMore, ShieldAlert, Star } from 'lucide-vue-next';
+import { Clock3, Mail, MapPin, MessageCircleMore, PhoneCall, ShieldAlert, Star } from 'lucide-vue-next';
 
 import { getAnnouncements } from '@/api/announcements.api';
 import { getEstablishmentById } from '@/api/establishments.api';
 import { createReport } from '@/api/reports.api';
 import { createReview, getReviews } from '@/api/reviews.api';
+import CallEstablishmentDialog from '@/components/public/CallEstablishmentDialog.vue';
 import GuestChatPanel from '@/components/public/GuestChatPanel.vue';
 import ReportDialog from '@/components/public/ReportDialog.vue';
 import ReviewForm from '@/components/public/ReviewForm.vue';
@@ -25,6 +26,7 @@ const loading = ref(false);
 const errorMessage = ref('');
 const successMessage = ref('');
 const chatOpen = ref(false);
+const callOpen = ref(false);
 const reportOpen = ref(false);
 
 const establishment = ref<Establishment | null>(null);
@@ -206,6 +208,10 @@ onMounted(load);
                   <MessageCircleMore class="mr-2 h-4 w-4" />
                   Send inquiry
                 </Button>
+                <Button variant="outline" class="h-12 justify-start" @click="callOpen = true">
+                  <PhoneCall class="mr-2 h-4 w-4" />
+                  Call establishment
+                </Button>
                 <Button variant="outline" class="h-12 justify-start" @click="reportOpen = true">
                   <ShieldAlert class="mr-2 h-4 w-4" />
                   Submit report
@@ -255,6 +261,7 @@ onMounted(load);
       </section>
 
       <GuestChatPanel :open="chatOpen" :establishment-id="establishment.id" :establishment-name="establishment.name" @close="chatOpen = false" />
+      <CallEstablishmentDialog :open="callOpen" :establishment-id="establishment.id" :establishment-name="establishment.name" @close="callOpen = false" />
       <ReportDialog :open="reportOpen" :establishment-id="establishment.id" @close="reportOpen = false" @submit="submitReport" />
     </div>
   </section>
