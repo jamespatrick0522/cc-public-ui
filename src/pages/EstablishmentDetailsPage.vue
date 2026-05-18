@@ -8,6 +8,7 @@ import { getEstablishmentById } from '@/api/establishments.api';
 import { createReport } from '@/api/reports.api';
 import { createReview, getReviews } from '@/api/reviews.api';
 import CallEstablishmentDialog from '@/components/public/CallEstablishmentDialog.vue';
+import EstablishmentLocationMap from '@/components/public/EstablishmentLocationMap.vue';
 import GuestChatPanel from '@/components/public/GuestChatPanel.vue';
 import ReportDialog from '@/components/public/ReportDialog.vue';
 import ReviewForm from '@/components/public/ReviewForm.vue';
@@ -44,13 +45,6 @@ const serviceList = computed(() =>
     ? establishment.value.services.split(',').map((item) => item.trim()).filter(Boolean)
     : [],
 );
-const mapUrl = computed(() => {
-  if (!establishment.value?.address) {
-    return null;
-  }
-
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(establishment.value.address)}`;
-});
 
 async function load() {
   if (!establishmentId.value) {
@@ -160,8 +154,7 @@ onMounted(load);
               <MapPin class="mt-0.5 h-4 w-4 text-secondary" />
               <div>
                 <p class="font-medium text-foreground">Address</p>
-                <p>{{ establishment.address }}</p>
-                <a v-if="mapUrl" :href="mapUrl" target="_blank" rel="noreferrer" class="mt-2 inline-block text-secondary hover:underline">Open in Maps</a>
+                <p>{{ establishment.address || 'No address provided yet.' }}</p>
               </div>
             </div>
             <div class="flex items-start gap-3 rounded-2xl border bg-card p-4 shadow-panel">
@@ -223,6 +216,13 @@ onMounted(load);
               </div>
             </CardContent>
           </Card>
+
+          <EstablishmentLocationMap
+            :latitude="establishment.latitude"
+            :longitude="establishment.longitude"
+            :address="establishment.address"
+            :name="establishment.name"
+          />
 
           <div v-if="advisories.length" class="rounded-3xl border bg-card p-5 shadow-panel">
             <h2 class="text-xl font-semibold text-foreground">City advisories</h2>
