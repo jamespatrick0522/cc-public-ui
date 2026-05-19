@@ -273,63 +273,65 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div v-if="open" class="fixed inset-0 z-50 flex items-end justify-center bg-black/45 p-0 md:items-center md:px-4 md:py-8">
-    <div class="w-full max-w-lg rounded-t-3xl border bg-card p-5 shadow-2xl md:rounded-3xl">
-      <div class="flex items-start justify-between gap-4">
-        <div>
-          <h3 class="flex items-center gap-2 text-2xl font-semibold text-foreground">
-            <PhoneCall class="h-5 w-5 text-secondary" />
-            Call {{ establishmentName }}
-          </h3>
-          <p class="mt-2 text-sm text-muted-foreground">{{ callStateText }}</p>
+  <Teleport to="body">
+    <div v-if="open" class="fixed inset-0 z-[1100] flex items-end justify-center bg-black/45 p-0 md:items-center md:px-4 md:py-8">
+      <div class="max-h-[calc(100dvh-1rem)] w-full max-w-lg overflow-y-auto rounded-t-3xl border bg-card p-5 shadow-2xl md:max-h-[calc(100dvh-4rem)] md:rounded-3xl">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="flex items-center gap-2 text-2xl font-semibold text-foreground">
+              <PhoneCall class="h-5 w-5 text-secondary" />
+              Call {{ establishmentName }}
+            </h3>
+            <p class="mt-2 text-sm text-muted-foreground">{{ callStateText }}</p>
+          </div>
+          <Button variant="ghost" size="sm" @click="closeDialog">Close</Button>
         </div>
-        <Button variant="ghost" size="sm" @click="closeDialog">Close</Button>
-      </div>
 
-      <div v-if="!call" class="mt-5 grid gap-4">
-        <div class="space-y-2">
-          <Label>Full name</Label>
-          <Input v-model="identity.fullName" class="h-11" placeholder="Juan Dela Cruz" />
+        <div v-if="!call" class="mt-5 grid gap-4">
+          <div class="space-y-2">
+            <Label>Full name</Label>
+            <Input v-model="identity.fullName" class="h-11" placeholder="Juan Dela Cruz" />
+          </div>
+          <div class="space-y-2">
+            <Label>Email</Label>
+            <Input v-model="identity.email" type="email" class="h-11" placeholder="Optional if phone is provided" />
+          </div>
+          <div class="space-y-2">
+            <Label>Phone</Label>
+            <Input v-model="identity.phone" class="h-11" placeholder="Optional if email is provided" />
+          </div>
         </div>
-        <div class="space-y-2">
-          <Label>Email</Label>
-          <Input v-model="identity.email" type="email" class="h-11" placeholder="Optional if phone is provided" />
-        </div>
-        <div class="space-y-2">
-          <Label>Phone</Label>
-          <Input v-model="identity.phone" class="h-11" placeholder="Optional if email is provided" />
-        </div>
-      </div>
 
-      <div v-else class="mt-6 rounded-2xl border bg-background p-5 text-center">
-        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-secondary/15">
-          <Phone class="h-7 w-7 text-secondary" />
+        <div v-else class="mt-6 rounded-2xl border bg-background p-5 text-center">
+          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-secondary/15">
+            <Phone class="h-7 w-7 text-secondary" />
+          </div>
+          <p class="mt-4 text-lg font-semibold text-foreground">{{ call.status.replace('_', ' ') }}</p>
+          <p v-if="isInCall" class="mt-1 font-mono text-2xl font-semibold text-primary">{{ callDuration }}</p>
+          <p class="mt-1 text-sm text-muted-foreground">
+            Started {{ new Date(call.startedAt).toLocaleTimeString() }}
+          </p>
         </div>
-        <p class="mt-4 text-lg font-semibold text-foreground">{{ call.status.replace('_', ' ') }}</p>
-        <p v-if="isInCall" class="mt-1 font-mono text-2xl font-semibold text-primary">{{ callDuration }}</p>
-        <p class="mt-1 text-sm text-muted-foreground">
-          Started {{ new Date(call.startedAt).toLocaleTimeString() }}
+
+        <p v-if="errorMessage" class="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {{ errorMessage }}
         </p>
-      </div>
 
-      <p v-if="errorMessage" class="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-        {{ errorMessage }}
-      </p>
-
-      <div class="mt-5 flex flex-wrap items-center justify-end gap-3">
-        <Button v-if="isInCall" variant="outline" class="h-11" @click="toggleMute">
-          <component :is="muted ? MicOff : Mic" class="mr-2 h-4 w-4" />
-          {{ muted ? 'Unmute' : 'Mute' }}
-        </Button>
-        <Button v-if="call" variant="destructive" class="h-11" @click="endCall">
-          <PhoneOff class="mr-2 h-4 w-4" />
-          End call
-        </Button>
-        <Button v-else class="h-11" :disabled="starting" @click="startCall">
-          <PhoneCall class="mr-2 h-4 w-4" />
-          {{ starting ? 'Calling...' : 'Start call' }}
-        </Button>
+        <div class="mt-5 flex flex-wrap items-center justify-end gap-3">
+          <Button v-if="isInCall" variant="outline" class="h-11" @click="toggleMute">
+            <component :is="muted ? MicOff : Mic" class="mr-2 h-4 w-4" />
+            {{ muted ? 'Unmute' : 'Mute' }}
+          </Button>
+          <Button v-if="call" variant="destructive" class="h-11" @click="endCall">
+            <PhoneOff class="mr-2 h-4 w-4" />
+            End call
+          </Button>
+          <Button v-else class="h-11" :disabled="starting" @click="startCall">
+            <PhoneCall class="mr-2 h-4 w-4" />
+            {{ starting ? 'Calling...' : 'Start call' }}
+          </Button>
+        </div>
       </div>
     </div>
-  </div>
+  </Teleport>
 </template>

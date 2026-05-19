@@ -152,7 +152,7 @@ onUnmounted(() => {
       <MapPin class="h-5 w-5 text-secondary" />
     </div>
 
-    <div v-if="hasCoordinates && mapKey" ref="mapElement" class="mt-4 h-80 overflow-hidden rounded-2xl border bg-muted"></div>
+    <div v-if="hasCoordinates && mapKey" ref="mapElement" class="relative z-0 mt-4 h-80 isolate overflow-hidden rounded-2xl border bg-muted"></div>
     <div v-else class="mt-4 rounded-2xl border border-dashed bg-muted/40 p-5 text-sm text-muted-foreground">
       <p v-if="hasCoordinates && !mapKey">
         Map preview is unavailable until the MapTiler API key is configured.
